@@ -37,3 +37,8 @@ At the end of every prompt or task execution, list every file that was created, 
 - For **Deleted** files (which no longer exist on disk and cannot be opened), render the workspace-relative path as plain inline code without a link: `` - `src/legacy/old-format.ts` ``.
 - Include generated artifacts as well as source edits: build output, exported media, logs, scratch/temp files, and files written by scripts or terminal commands.
 - If a run produced no file changes, state `No files were created or modified.`
+
+## Preserve default VS Code chat output
+
+- Recording tokenomics (`update-tokenomics.py`) and appending `## Tokenomics` and `## Files` are strictly additive and must **never** replace, suppress, or alter VS Code's normal chat response or built-in tool defaults.
+- Always display the complete user-facing explanation, analysis, or report in the chat response, with `## Tokenomics` and `## Files` appended at the end.
