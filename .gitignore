@@ -13,3 +13,10 @@ Thumbs.db
 # Temp / Scratch
 *.tmp
 *.bak
+
+# Daily Tokenomics CSV Logs (keep examples/ tracked)
+tokenomics-*.csv
+!examples/sample-tokenomics-*.csv
+
+# Copilot Tracking Artifacts
+.copilot-tracking/
