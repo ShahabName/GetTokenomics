@@ -16,12 +16,11 @@ Most teams assume you need a custom VS Code extension, an enterprise API key, or
 
 Turns out—you don't need any of that! 💡
 
-By combining **1 pure-Python script** (`update-tokenomics.py`, zero `pip` packages) with a modular block inside your personal **`~/.copilot/instructions/global.instructions.md`**, Copilot automatically parses its own local session stream (`events.jsonl`) at the end of every prompt:
+By using **1 pure-Python script** (`update-tokenomics.py`, zero `pip` packages) to parse your local Copilot session stream (`events.jsonl`), you get two flexible ways to track your tokenomics:
 
-✅ Logs **29 telemetry columns** into a daily `tokenomics-CCYYMMDD.csv` in your workspace
-✅ Prints a live **`## Tokenomics` summary table** + clickable CSV/file links at the end of every chat response
-✅ Auto-reconciles previous turns when background tool calls settle
-✅ Includes a 1-line **`TOKENOMICS_SWITCH: ON | OFF`** toggle (or `--on` / `--off` CLI switch) to pause or resume anytime
+✅ **Zero Token Usage Mode (Default — `TOKENOMICS_SWITCH: OFF`):** Run `python ~/.copilot/instructions/update-tokenomics.py` from your terminal at the end of the day to log **29 telemetry columns** into `tokenomics-CCYYMMDD.csv` with **0 LLM tokens consumed**!
+✅ **Optional Live In-Chat Preview (`--on`):** Want a live **`## Tokenomics` summary table** + clickable CSV/file links at the end of every GHCP Chat response? Run `--on` (or set `TOKENOMICS_SWITCH: ON`) anytime—uses only a tiny fraction of prompt-cached tokens!
+✅ Auto-reconciles previous turns across all daily sessions when background tool calls settle
 ✅ **Zero extensions. Zero restrictions. Zero org permissions needed.**
 
 🔗 **GitHub Repo (MIT License):** https://github.com/ShahabName/GetTokenomics

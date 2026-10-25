@@ -22,19 +22,19 @@ class TestGetTokenomics(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             inst = Path(tmp) / "global.instructions.md"
             inst.write_text(
-                "# Global Instructions\n- **Tokenomics Tracking Switch**: `TOKENOMICS_SWITCH: ON`\n",
+                "# Global Instructions\n- **Tokenomics Tracking Switch**: `TOKENOMICS_SWITCH: OFF`\n",
                 encoding="utf-8",
             )
             enabled, _ = ut.is_tokenomics_enabled(str(inst))
-            self.assertTrue(enabled)
-
-            ut.set_tokenomics_switch(False, str(inst))
-            enabled_after_off, _ = ut.is_tokenomics_enabled(str(inst))
-            self.assertFalse(enabled_after_off)
+            self.assertFalse(enabled)
 
             ut.set_tokenomics_switch(True, str(inst))
             enabled_after_on, _ = ut.is_tokenomics_enabled(str(inst))
             self.assertTrue(enabled_after_on)
+
+            ut.set_tokenomics_switch(False, str(inst))
+            enabled_after_off, _ = ut.is_tokenomics_enabled(str(inst))
+            self.assertFalse(enabled_after_off)
 
     def test_parse_and_update_csv(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -100,6 +100,34 @@ class TestGetTokenomics(unittest.TestCase):
             with csv_path.open("r", encoding="utf-8") as f:
                 reader = csv.DictReader(f)
                 self.assertEqual(reader.fieldnames, ut.HEADERS)
+
+    def test_given_repo_and_website_snippets_when_inspected_then_default_off_and_preserve_output_rule_are_present(self):
+        repo_root = Path(__file__).resolve().parent.parent
+        heading = "## Preserve default VS Code chat output"
+        bullet_one = "Recording tokenomics (`update-tokenomics.py`) and appending `## Tokenomics` and `## Files` are strictly additive and must **never** replace, suppress, or alter VS Code's normal chat response or built-in tool defaults."
+        bullet_one_js = r"Recording tokenomics (\`update-tokenomics.py\`) and appending \`## Tokenomics\` and \`## Files\` are strictly additive and must **never** replace, suppress, or alter VS Code's normal chat response or built-in tool defaults."
+        bullet_two = "Always display the complete user-facing explanation, analysis, or report in the chat response"
+        markdown_files = [
+            repo_root / "instructions" / "global-instructions-snippet.md",
+            repo_root / "instructions" / "tokenomics.instructions.md",
+            repo_root / "README.md",
+            repo_root / "LINKEDIN_ARTICLE.md",
+            repo_root / "linkedin" / "LINKEDIN_ARTICLE.md",
+        ]
+        html_file = repo_root / "docs" / "index.html"
+
+        for md_path in markdown_files:
+            content = md_path.read_text(encoding="utf-8")
+            self.assertIn(heading, content, f"Missing heading in {md_path}")
+            self.assertIn(bullet_one, content, f"Missing first bullet in {md_path}")
+            self.assertIn(bullet_two, content, f"Missing second bullet in {md_path}")
+            self.assertIn("TOKENOMICS_SWITCH: OFF", content, f"Default OFF switch missing in {md_path}")
+
+        html_content = html_file.read_text(encoding="utf-8")
+        self.assertEqual(html_content.count(heading), 2)
+        self.assertIn(bullet_one, html_content)
+        self.assertIn(bullet_one_js, html_content)
+        self.assertEqual(html_content.count(bullet_two), 2)
 
 
 if __name__ == "__main__":

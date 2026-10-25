@@ -235,7 +235,7 @@
         Inside GitHub Copilot
       </h1>
       <p class="lead">
-        An accidental discovery turned into a lightweight open-source superpower: drop a single pure-Python script into <code>~/.copilot/instructions/</code>, add a modular block with an instant <code>TOKENOMICS_SWITCH: ON | OFF</code> toggle to your <code>global.instructions.md</code>, and automatically log 29 telemetry columns on every prompt.
+        An accidental discovery turned into a lightweight open-source superpower: drop a single pure-Python script into <code>~/.copilot/instructions/</code>, run it from your terminal at the end of the day to log 29 telemetry columns into <code>tokenomics-CCYYMMDD.csv</code> with <strong>zero LLM token usage</strong>, or flip <code>TOKENOMICS_SWITCH: ON</code> whenever you want a live <code>## Tokenomics</code> preview table inside GitHub Copilot Chat.
       </p>
       <div class="hero-actions">
         <a class="btn btn-primary" href="#setup">🚀 2-Minute Setup Guide</a>
@@ -254,16 +254,16 @@
       <p class="section-sub">Built using only local files GitHub Copilot already writes to your user directory.</p>
       <div class="grid-3">
         <div class="card">
-          <h3>🔒 Zero Enterprise Friction</h3>
-          <p>No VS Code marketplace extension to vet, no third-party telemetry server, no API keys, and no organization admin approval required. 100% local to your machine.</p>
+          <h3>⚡ Zero Token Usage by Default</h3>
+          <p>Run <code>python update-tokenomics.py</code> from your terminal at the end of the day to sync all daily sessions into <code>tokenomics-CCYYMMDD.csv</code> while consuming <strong>0 LLM tokens and 0 AIU credits</strong>.</p>
         </div>
         <div class="card">
-          <h3>🎛️ Modular ON / OFF Switch</h3>
-          <p>Flip <code>TOKENOMICS_SWITCH: ON</code> or <code>OFF</code> directly inside <code>global.instructions.md</code> or run <code>python update-tokenomics.py --off</code> in 1 second whenever you want quiet responses.</p>
+          <h3>🎛️ Opt-In Live Chat Preview (Default: OFF)</h3>
+          <p>First-time deployment keeps <code>TOKENOMICS_SWITCH: OFF</code> in <code>global.instructions.md</code>. Want a live <code>## Tokenomics</code> table in GHCP Chat after every prompt? Run <code>--on</code> anytime (uses a small fraction of cached tokens).</p>
         </div>
         <div class="card">
           <h3>🔄 Multi-Turn Settlement Accuracy</h3>
-          <p>Agentic turns invoke multiple tools before finishing. <code>update-tokenomics.py</code> automatically reconciles previous turns whose final tool-call usage settled after the response rendered.</p>
+          <p>Agentic turns invoke multiple tools before finishing. <code>update-tokenomics.py</code> automatically reconciles previous turns across all daily sessions whose final tool-call usage settled after the response rendered.</p>
         </div>
       </div>
     </section>
@@ -271,15 +271,15 @@
     <!-- INTERACTIVE ON/OFF SWITCH SIMULATOR -->
     <section id="switch">
       <h2 class="section-title">Interactive Modular Switch Preview</h2>
-      <p class="section-sub">Click the switch below to see how toggling <code>TOKENOMICS_SWITCH</code> changes behavior immediately.</p>
+      <p class="section-sub">Default deployment starts <code>OFF</code> (Zero Token Usage in chat). Click the switch below to preview opting into live in-chat <code>## Tokenomics</code> tables:</p>
       <div class="switch-box">
         <div class="switch-header">
           <div>
             <strong>Current Global Instruction State:</strong>
-            <span id="switchStateText" style="color: var(--emerald); font-weight: 700; margin-left: 8px;">ENABLED (Recording CSV + Showing ## Tokenomics)</span>
+            <span id="switchStateText" style="color: var(--cyan); font-weight: 700; margin-left: 8px;">DEFAULT OFF (Zero Chat Token Overhead • Run via CLI at End of Day for 0 Tokens)</span>
           </div>
-          <button id="toggleBtn" class="toggle-btn" onclick="toggleSwitch()">
-            <span>●</span> <span id="toggleBtnLabel">TOKENOMICS_SWITCH: ON</span>
+          <button id="toggleBtn" class="toggle-btn off" onclick="toggleSwitch()">
+            <span>●</span> <span id="toggleBtnLabel">TOKENOMICS_SWITCH: OFF</span>
           </button>
         </div>
         <div class="sim-grid">
@@ -287,17 +287,14 @@
             <div class="code-header"><span>~/.copilot/instructions/global.instructions.md</span></div>
             <pre id="simInstructions">## Record and report daily tokenomics at the end of execution
 
-- **Tokenomics Tracking Switch**: `TOKENOMICS_SWITCH: ON`
-- **Switch Rule**: Checked before execution -> ACTIVE</pre>
+- **Tokenomics Tracking Switch**: `TOKENOMICS_SWITCH: OFF` (Default)
+- **Switch Rule**: In-chat display skipped -> 0 EXTRA CHAT TOKENS</pre>
           </div>
           <div>
-            <div class="code-header"><span>Resulting Copilot Response Footer</span></div>
-            <pre id="simOutput">## Tokenomics
-| Metric            | Value                                  |
-| Model             | Gemini 4 Argon (effort: high)          |
-| Input / Cache Hit | 1,470,171 tokens (98.78% Cache Hit)    |
-| Total AIU Credits | 19.735150 AIU (19,735,150,000 NanoAIU) |
-| Daily CSV         | [tokenomics-20261024.csv](C:/.../csv)  |</pre>
+            <div class="code-header"><span>Resulting Behavior (CLI vs. GHCP Chat)</span></div>
+            <pre id="simOutput"># End-of-Day Terminal / CLI Sync (0 Tokens Consumed):
+$ python ~/.copilot/instructions/update-tokenomics.py
+CSV_PATH: .../tokenomics-20261024.csv (All daily turns synced at 0 token cost!)</pre>
           </div>
         </div>
       </div>
@@ -305,8 +302,8 @@
 
     <!-- STEP BY STEP SETUP WITH SCREENSHOTS -->
     <section id="setup">
-      <h2 class="section-title">Step-by-Step Setup Guide (With Screenshots)</h2>
-      <p class="section-sub">Type your Windows / macOS username below to personalize the commands before copying:</p>
+      <h2 class="section-title">Step-by-Step Setup Guide (Zero Token Usage First!)</h2>
+      <p class="section-sub">Type your Windows / macOS username below to personalize all commands before copying:</p>
 
       <div class="customizer-bar">
         <label for="usernameInput">👤 Your OS Username / Alias:</label>
@@ -316,9 +313,9 @@
 
       <!-- STEP 1 -->
       <div class="step-card">
-        <span class="step-num">STEP 1 OF 4</span>
+        <span class="step-num">STEP 1 OF 4 • INSTALL SCRIPT</span>
         <h3>Download <code>update-tokenomics.py</code> into your <code>.copilot/instructions</code> folder</h3>
-        <p style="color: var(--muted);">Run this one-liner in PowerShell (Windows) or Terminal (macOS/Linux) to save the script in your user directory:</p>
+        <p style="color: var(--muted);">Run this one-liner in PowerShell (Windows) or Terminal (macOS/Linux) to save the zero-dependency script in your user directory:</p>
         <div class="code-header">
           <span>PowerShell (Windows)</span>
           <button class="copy-btn" onclick="copyCode('cmdStep1', this)">Copy Command</button>
@@ -331,19 +328,38 @@ Invoke-WebRequest -Uri "https://raw.githubusercontent.com/ShahabName/GetTokenomi
         </div>
       </div>
 
-      <!-- STEP 2 -->
+      <!-- STEP 2: ZERO TOKEN USAGE CLI CAPTURE -->
       <div class="step-card">
-        <span class="step-num">STEP 2 OF 4</span>
-        <h3>Add the Modular Tokenomics Block &amp; ON/OFF Switch to <code>global.instructions.md</code></h3>
-        <p style="color: var(--muted);">Open <code id="instPathInline">C:\Users\YourAliasName\.copilot\instructions\global.instructions.md</code> in VS Code and paste the cleaned modular snippet below:</p>
+        <span class="step-num">STEP 2 OF 4 • ZERO TOKEN USAGE (RECOMMENDED DEFAULT)</span>
+        <h3>Run from Terminal / CLI at the End of the Day (0 Tokens Consumed!)</h3>
+        <p style="color: var(--muted);">GitHub Copilot automatically records every prompt's telemetry locally in <code>~/.copilot/session-state/&lt;session-id&gt;/events.jsonl</code>. Run this command in your workspace terminal at the end of the day (or anytime on demand) to generate/update your 29-column <code>tokenomics-CCYYMMDD.csv</code> <strong>without consuming a single LLM token</strong>:</p>
         <div class="code-header">
-          <span>global.instructions.md Snippet (Modular + ON/OFF Switch + Clickable File Links)</span>
+          <span>End-of-Day Zero-Token CLI Sync (Windows / macOS / Linux)</span>
+          <button class="copy-btn" onclick="copyCode('cmdStep4', this)">Copy CLI Commands</button>
+        </div>
+        <pre id="cmdStep4"># Sync all Copilot sessions from today into tokenomics-CCYYMMDD.csv (0 tokens consumed!)
+python "C:\Users\YourAliasName\.copilot\instructions\update-tokenomics.py"
+
+# Optional: also print the latest turn's ## Tokenomics Markdown table in your terminal
+python "C:\Users\YourAliasName\.copilot\instructions\update-tokenomics.py" --markdown</pre>
+        <div class="screenshot-frame">
+          <img src="assets/screenshots/step-4-daily-csv-analytics.png" alt="Step 2: Zero-Token End-of-Day CLI Sync and 29-Column CSV screenshot" />
+        </div>
+      </div>
+
+      <!-- STEP 3: GLOBAL INSTRUCTIONS (DEFAULT OFF) -->
+      <div class="step-card">
+        <span class="step-num">STEP 3 OF 4 • GLOBAL INSTRUCTIONS (DEFAULT: OFF)</span>
+        <h3>Add the Modular Snippet to <code>global.instructions.md</code> (Default State: <code>OFF</code>)</h3>
+        <p style="color: var(--muted);">Open <code id="instPathInline">C:\Users\YourAliasName\.copilot\instructions\global.instructions.md</code> in VS Code and paste the modular snippet below. Notice that <code>TOKENOMICS_SWITCH: OFF</code> is the default so your chat prompts consume <strong>0 extra tokens</strong> until you choose to enable in-chat preview:</p>
+        <div class="code-header">
+          <span>global.instructions.md Snippet (Default: TOKENOMICS_SWITCH: OFF + Clickable File Links)</span>
           <button class="copy-btn" onclick="copyCode('cmdStep2', this)">Copy Instructions Snippet</button>
         </div>
         <pre id="cmdStep2">## Record and report daily tokenomics at the end of execution
 
-- **Tokenomics Tracking Switch**: `TOKENOMICS_SWITCH: ON` *(Change to `OFF` to disable tokenomics CSV logging and response reporting; change to `ON` to enable)*
-- **Switch Rule**: Before recording or reporting tokenomics, check `TOKENOMICS_SWITCH` above. If it is set to `OFF`, skip running `update-tokenomics.py`, do not create or modify `tokenomics-CCYYMMDD.csv`, and omit the `## Tokenomics` section from the response.
+- **Tokenomics Tracking Switch**: `TOKENOMICS_SWITCH: OFF` *(Default: `OFF` for zero token usage in chat — run `python "C:\Users\YourAliasName\.copilot\instructions\update-tokenomics.py"` in your terminal at the end of the day to update `tokenomics-CCYYMMDD.csv` with 0 tokens consumed. Change to `ON` or run `--on` if you want a live `## Tokenomics` preview table in GHCP Chat at the end of each prompt, which consumes a small fraction of tokens)*
+- **Switch Rule**: Before recording or reporting tokenomics, check `TOKENOMICS_SWITCH` above. If it is set to `OFF`, skip running `update-tokenomics.py`, do not create or modify `tokenomics-CCYYMMDD.csv` during the chat turn, and omit the `## Tokenomics` section from the response.
 
 When `TOKENOMICS_SWITCH: ON`, at the end of every prompt or task execution, record the prompt's tokenomics and AIC/AIU consumption in today's daily CSV file in the workspace root (`tokenomics-CCYYMMDD.csv`, where `CCYYMMDD` is the current date in `YYYYMMDD` format, such as `tokenomics-20261024.csv`) and display a summary in the final response.
 
@@ -360,39 +376,29 @@ When `TOKENOMICS_SWITCH: ON`, at the end of every prompt or task execution, reco
 - Recording tokenomics (`update-tokenomics.py`) and appending `## Tokenomics` and `## Files` are strictly additive and must **never** replace, suppress, or alter VS Code's normal chat response or built-in tool defaults.
 - Always display the complete user-facing explanation, analysis, or report in the chat response, with `## Tokenomics` and `## Files` appended at the end.</pre>
         <div class="screenshot-frame">
-          <img src="assets/screenshots/step-2-global-instructions-switch.png" alt="Step 2: Global instructions switch screenshot" />
+          <img src="assets/screenshots/step-2-global-instructions-switch.png" alt="Step 3: Global instructions switch default OFF screenshot" />
         </div>
       </div>
 
-      <!-- STEP 3 -->
+      <!-- STEP 4: OPTIONAL IN-CHAT PREVIEW -->
       <div class="step-card">
-        <span class="step-num">STEP 3 OF 4</span>
-        <h3>Run Any Prompt in GitHub Copilot Chat and See Live Tokenomics</h3>
-        <p style="color: var(--muted);">Every response now automatically updates today's <code>tokenomics-CCYYMMDD.csv</code> and displays the structured <code>## Tokenomics</code> summary right above clickable <code>## Files</code> links:</p>
-        <div class="screenshot-frame">
-          <img src="assets/screenshots/step-3-chat-tokenomics-output.png" alt="Step 3: Copilot Chat Tokenomics Output screenshot" />
-        </div>
-      </div>
-
-      <!-- STEP 4 -->
-      <div class="step-card">
-        <span class="step-num">STEP 4 OF 4</span>
-        <h3>Toggle ON/OFF Anytime or Analyze Your 29-Column CSV</h3>
-        <p style="color: var(--muted);">Use the CLI flags or edit <code>TOKENOMICS_SWITCH: OFF</code> whenever you want to pause tracking:</p>
+        <span class="step-num">STEP 4 OF 4 • OPTIONAL IN-CHAT PREVIEW TABLE</span>
+        <h3>Enable Live <code>## Tokenomics</code> Preview in GHCP Chat (<code>--on</code>) When You Want It</h3>
+        <p style="color: var(--muted);">Want a live <code>## Tokenomics</code> table of major token usage fields (Model, API Calls, Input/Cached/Output/Reasoning Tokens, Cache Hit %, NanoAIU, AIU Credits, Duration &amp; clickable CSV link) at the end of every prompt in GitHub Copilot Chat? Turn it <code>ON</code> yourself anytime! <em>Note: Live in-chat preview uses a small fraction of tokens per prompt (1 prompt-cached tool call + ~200 output tokens to render the table, with 0 extra user prompt multiplier).</em></p>
         <div class="code-header">
-          <span>CLI Switch Commands</span>
-          <button class="copy-btn" onclick="copyCode('cmdStep4', this)">Copy CLI Commands</button>
+          <span>Enable / Disable Live In-Chat Preview Table</span>
+          <button class="copy-btn" onclick="copyCode('cmdStep3Toggle', this)">Copy Toggle Commands</button>
         </div>
-        <pre id="cmdStep4"># Check current status (ON or OFF)
-python "C:\Users\YourAliasName\.copilot\instructions\update-tokenomics.py" --status
+        <pre id="cmdStep3Toggle"># Turn ON live ## Tokenomics preview table in GHCP Chat (consumes a fraction of tokens)
+python "C:\Users\YourAliasName\.copilot\instructions\update-tokenomics.py" --on
 
-# Turn OFF tokenomics tracking
+# Turn OFF live in-chat preview anytime (back to default 0-token CLI mode)
 python "C:\Users\YourAliasName\.copilot\instructions\update-tokenomics.py" --off
 
-# Turn ON tokenomics tracking
-python "C:\Users\YourAliasName\.copilot\instructions\update-tokenomics.py" --on</pre>
+# Check current switch status (OFF by default)
+python "C:\Users\YourAliasName\.copilot\instructions\update-tokenomics.py" --status</pre>
         <div class="screenshot-frame">
-          <img src="assets/screenshots/step-4-daily-csv-analytics.png" alt="Step 4: 29-Column CSV and CLI Toggle screenshot" />
+          <img src="assets/screenshots/step-3-chat-tokenomics-output.png" alt="Step 4: Live Copilot Chat Tokenomics Output screenshot" />
         </div>
       </div>
     </section>
@@ -479,7 +485,7 @@ python "C:\Users\YourAliasName\.copilot\instructions\update-tokenomics.py" --on<
       renderSchema(cat);
     }
 
-    let isSwitchOn = true;
+    let isSwitchOn = false;
     function toggleSwitch() {
       isSwitchOn = !isSwitchOn;
       const btn = document.getElementById("toggleBtn");
@@ -491,17 +497,17 @@ python "C:\Users\YourAliasName\.copilot\instructions\update-tokenomics.py" --on<
       if (isSwitchOn) {
         btn.classList.remove("off");
         lbl.textContent = "TOKENOMICS_SWITCH: ON";
-        stateTxt.textContent = "ENABLED (Recording CSV + Showing ## Tokenomics)";
+        stateTxt.textContent = "OPT-IN ENABLED (Live ## Tokenomics Preview Table in GHCP Chat • Uses a Fraction of Cached Tokens)";
         stateTxt.style.color = "var(--emerald)";
-        simInst.textContent = `## Record and report daily tokenomics at the end of execution\n\n- **Tokenomics Tracking Switch**: \`TOKENOMICS_SWITCH: ON\`\n- **Switch Rule**: Checked before execution -> ACTIVE`;
+        simInst.textContent = `## Record and report daily tokenomics at the end of execution\n\n- **Tokenomics Tracking Switch**: \`TOKENOMICS_SWITCH: ON\`\n- **Switch Rule**: Checked before execution -> ACTIVE IN CHAT`;
         simOut.textContent = `## Tokenomics\n| Metric            | Value                                  |\n| Model             | Gemini 4 Argon (effort: high)          |\n| Input / Cache Hit | 1,470,171 tokens (98.78% Cache Hit)    |\n| Total AIU Credits | 19.735150 AIU (19,735,150,000 NanoAIU) |\n| Daily CSV         | [tokenomics-20261024.csv](C:/.../csv)  |`;
       } else {
         btn.classList.add("off");
         lbl.textContent = "TOKENOMICS_SWITCH: OFF";
-        stateTxt.textContent = "DISABLED (Zero CSV writes, ## Tokenomics omitted)";
-        stateTxt.style.color = "var(--rose)";
-        simInst.textContent = `## Record and report daily tokenomics at the end of execution\n\n- **Tokenomics Tracking Switch**: \`TOKENOMICS_SWITCH: OFF\`\n- **Switch Rule**: Checked before execution -> SKIPPED`;
-        simOut.textContent = `(## Tokenomics section & CSV update cleanly skipped.\n Normal Copilot response is shown with zero overhead.)`;
+        stateTxt.textContent = "DEFAULT OFF (Zero Chat Token Overhead • Run via CLI at End of Day for 0 Tokens)";
+        stateTxt.style.color = "var(--cyan)";
+        simInst.textContent = `## Record and report daily tokenomics at the end of execution\n\n- **Tokenomics Tracking Switch**: \`TOKENOMICS_SWITCH: OFF\` (Default)\n- **Switch Rule**: In-chat display skipped -> 0 EXTRA CHAT TOKENS`;
+        simOut.textContent = `# End-of-Day Terminal / CLI Sync (0 Tokens Consumed):\n$ python ~/.copilot/instructions/update-tokenomics.py\nCSV_PATH: .../tokenomics-20261024.csv (All daily turns synced at 0 token cost!)`;
       }
     }
 
@@ -516,8 +522,8 @@ Invoke-WebRequest -Uri "https://raw.githubusercontent.com/ShahabName/GetTokenomi
       document.getElementById("cmdStep2").textContent =
 `## Record and report daily tokenomics at the end of execution
 
-- **Tokenomics Tracking Switch**: \`TOKENOMICS_SWITCH: ON\` *(Change to \`OFF\` to disable tokenomics CSV logging and response reporting; change to \`ON\` to enable)*
-- **Switch Rule**: Before recording or reporting tokenomics, check \`TOKENOMICS_SWITCH\` above. If it is set to \`OFF\`, skip running \`update-tokenomics.py\`, do not create or modify \`tokenomics-CCYYMMDD.csv\`, and omit the \`## Tokenomics\` section from the response.
+- **Tokenomics Tracking Switch**: \`TOKENOMICS_SWITCH: OFF\` *(Default: \`OFF\` for zero token usage in chat — run \`python "C:\\Users\\${user}\\.copilot\\instructions\\update-tokenomics.py"\` in your terminal at the end of the day to update \`tokenomics-CCYYMMDD.csv\` with 0 tokens consumed. Change to \`ON\` or run \`--on\` if you want a live \`## Tokenomics\` preview table in GHCP Chat at the end of each prompt, which consumes a small fraction of tokens)*
+- **Switch Rule**: Before recording or reporting tokenomics, check \`TOKENOMICS_SWITCH\` above. If it is set to \`OFF\`, skip running \`update-tokenomics.py\`, do not create or modify \`tokenomics-CCYYMMDD.csv\` during the chat turn, and omit the \`## Tokenomics\` section from the response.
 
 When \`TOKENOMICS_SWITCH: ON\`, at the end of every prompt or task execution, record the prompt's tokenomics and AIC/AIU consumption in today's daily CSV file in the workspace root (\`tokenomics-CCYYMMDD.csv\`, where \`CCYYMMDD\` is the current date in \`YYYYMMDD\` format, such as \`tokenomics-20261024.csv\`) and display a summary in the final response.
 
@@ -535,14 +541,21 @@ When \`TOKENOMICS_SWITCH: ON\`, at the end of every prompt or task execution, re
 - Always display the complete user-facing explanation, analysis, or report in the chat response, with \`## Tokenomics\` and \`## Files\` appended at the end.`;
 
       document.getElementById("cmdStep4").textContent =
-`# Check current status (ON or OFF)
-python "C:\\Users\\${user}\\.copilot\\instructions\\update-tokenomics.py" --status
+`# Sync all Copilot sessions from today into tokenomics-CCYYMMDD.csv (0 tokens consumed!)
+python "C:\\Users\\${user}\\.copilot\\instructions\\update-tokenomics.py"
 
-# Turn OFF tokenomics tracking
+# Optional: also print the latest turn's ## Tokenomics Markdown table in your terminal
+python "C:\\Users\\${user}\\.copilot\\instructions\\update-tokenomics.py" --markdown`;
+
+      document.getElementById("cmdStep3Toggle").textContent =
+`# Turn ON live ## Tokenomics preview table in GHCP Chat (consumes a fraction of tokens)
+python "C:\\Users\\${user}\\.copilot\\instructions\\update-tokenomics.py" --on
+
+# Turn OFF live in-chat preview anytime (back to default 0-token CLI mode)
 python "C:\\Users\\${user}\\.copilot\\instructions\\update-tokenomics.py" --off
 
-# Turn ON tokenomics tracking
-python "C:\\Users\\${user}\\.copilot\\instructions\\update-tokenomics.py" --on`;
+# Check current switch status (OFF by default)
+python "C:\\Users\\${user}\\.copilot\\instructions\\update-tokenomics.py" --status`;
     }
 
     function copyCode(id, btn) {

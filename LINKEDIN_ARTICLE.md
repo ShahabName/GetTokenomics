@@ -22,12 +22,13 @@ Normally, getting that level of telemetry in an enterprise environment feels imp
 
 While inspecting how Copilot Agent Mode maintains state across multi-turn sessions on my machine, I stumbled upon something remarkable: **GitHub Copilot already writes a rich, structured JSONL event stream locally inside your user profile directory** (`~/.copilot/session-state/<session-id>/events.jsonl`).
 
-Even better? By combining **one zero-dependency Python script** (`update-tokenomics.py`) with **GitHub Copilot's personal `global.instructions.md`** file, you can instruct Copilot to automatically parse that local event stream at the end of every prompt, log **29 granular telemetry columns** into a daily CSV (`tokenomics-CCYYMMDD.csv`), and print a live **`## Tokenomics` scorecard** right inside your chat response!
+Even better? By using **one zero-dependency Python script** (`update-tokenomics.py`), you can parse that local event stream from your terminal at the end of the day to log **29 granular telemetry columns** into a daily CSV (`tokenomics-CCYYMMDD.csv`) while consuming **zero LLM tokens**! And if you want a live **`## Tokenomics` preview scorecard** right inside your GitHub Copilot Chat response at the end of every prompt, you can opt in anytime by toggling `TOKENOMICS_SWITCH: ON` in your personal `global.instructions.md`!
 
+* **Zero Token Usage by default** (end-of-day CLI sync runs 100% offline against `events.jsonl` with 0 tokens consumed).
 * **No VS Code extension required.**
 * **No `pip install` packages required** (100% Python 3 Standard Library).
 * **No organization admin approval or API keys required.**
-* **Includes a 1-line `TOKENOMICS_SWITCH: ON | OFF` toggle** so you can turn it on or off anytime.
+* **Default `TOKENOMICS_SWITCH: OFF` for in-chat display** so you decide if and when to enable the live in-chat `## Tokenomics` preview table (which uses a small fraction of cached tokens per prompt).
 
 It was a complete accidental discovery—and it turned out to be so genuinely useful that I packaged it under the **MIT License** as [**GetTokenomics**](https://github.com/ShahabName/GetTokenomics) so everyone in the community can use it.
 
@@ -47,7 +48,7 @@ In Agentic workflows, the very last tool call of Turn $N$ (`task_complete` or fi
 
 ---
 
-## How to Set Up GetTokenomics in 2 Minutes
+## How to Set Up GetTokenomics in 2 Minutes (Zero Token Usage First!)
 
 ### Step 1: Download `update-tokenomics.py` into `~/.copilot/instructions/`
 
@@ -71,15 +72,31 @@ curl -fsSL https://raw.githubusercontent.com/ShahabName/GetTokenomics/main/updat
 
 ---
 
-### Step 2: Add the Modular Snippet (with the `ON/OFF` Switch) to `global.instructions.md`
+### Step 2: Capture Token Usage from Terminal / CLI at the End of the Day (Zero Token Usage — Default!)
 
-Open your personal global instructions file at `C:\Users\YourAliasName\.copilot\instructions\global.instructions.md` (or `~/.copilot/instructions/global.instructions.md`) and add the block below:
+Because GitHub Copilot automatically writes session telemetry locally to `~/.copilot/session-state/<session-id>/events.jsonl`, you can capture your full 29-column `tokenomics-CCYYMMDD.csv` at the end of the day (or anytime on demand) **without consuming a single LLM token**:
+
+```bash
+# Run from your project directory at the end of the day (0 tokens consumed!)
+python "$HOME/.copilot/instructions/update-tokenomics.py"
+
+# Optional: print the latest turn's ## Tokenomics Markdown table in your terminal
+python "$HOME/.copilot/instructions/update-tokenomics.py" --markdown
+```
+
+![Step 4: 29-Column CSV & Zero-Token CLI Sync](../docs/assets/screenshots/step-4-daily-csv-analytics.png)
+
+---
+
+### Step 3: Add the Modular Snippet to `global.instructions.md` (Default State: `OFF`)
+
+Open your personal global instructions file at `C:\Users\YourAliasName\.copilot\instructions\global.instructions.md` (or `~/.copilot/instructions/global.instructions.md`) and add the block below. Notice that **`TOKENOMICS_SWITCH` defaults to `OFF`** in first-time deployment so your chat prompts consume **zero extra tokens** until you decide to turn live in-chat display `ON`:
 
 ````markdown
 ## Record and report daily tokenomics at the end of execution
 
-- **Tokenomics Tracking Switch**: `TOKENOMICS_SWITCH: ON` *(Change to `OFF` to disable tokenomics CSV logging and response reporting; change to `ON` to enable)*
-- **Switch Rule**: Before recording or reporting tokenomics, check `TOKENOMICS_SWITCH` above. If it is set to `OFF`, skip running `update-tokenomics.py`, do not create or modify `tokenomics-CCYYMMDD.csv`, and omit the `## Tokenomics` section from the response.
+- **Tokenomics Tracking Switch**: `TOKENOMICS_SWITCH: OFF` *(Default: `OFF` for zero token usage in chat — run `python "C:\Users\YourAliasName\.copilot\instructions\update-tokenomics.py"` in your terminal at the end of the day to update `tokenomics-CCYYMMDD.csv` with 0 tokens consumed. Change to `ON` or run `--on` if you want a live `## Tokenomics` preview table in GHCP Chat at the end of each prompt, which consumes a small fraction of tokens)*
+- **Switch Rule**: Before recording or reporting tokenomics, check `TOKENOMICS_SWITCH` above. If it is set to `OFF`, skip running `update-tokenomics.py`, do not create or modify `tokenomics-CCYYMMDD.csv` during the chat turn, and omit the `## Tokenomics` section from the response.
 
 When `TOKENOMICS_SWITCH: ON`, at the end of every prompt or task execution, record the prompt's tokenomics and AIC/AIU consumption in today's daily CSV file in the workspace root (`tokenomics-CCYYMMDD.csv`, where `CCYYMMDD` is the current date in `YYYYMMDD` format, such as `tokenomics-20261024.csv`) and display a summary in the final response.
 
@@ -97,29 +114,28 @@ When `TOKENOMICS_SWITCH: ON`, at the end of every prompt or task execution, reco
 - Always display the complete user-facing explanation, analysis, or report in the chat response, with `## Tokenomics` and `## Files` appended at the end.
 ````
 
-![Step 2: Global Instructions with ON/OFF Switch](../docs/assets/screenshots/step-2-global-instructions-switch.png)
+![Step 2: Global Instructions with Default OFF Switch](../docs/assets/screenshots/step-2-global-instructions-switch.png)
 
 ---
 
-### Step 3: Watch Live Tokenomics Appear at the End of Every Prompt
+### Step 4: Optional — Enable Live `## Tokenomics` Preview in GHCP Chat (`--on`)
 
-Run any prompt in GitHub Copilot Chat. At the end of the response, Copilot automatically runs `update-tokenomics.py`, updates `tokenomics-CCYYMMDD.csv`, and displays your `## Tokenomics` table with a clickable link straight to the CSV file:
+Want to see a live **`## Tokenomics` table** of major token usage fields (`Model`, `Turn / API Calls`, `Input / Cache Read Tokens`, `Output / Reasoning Tokens`, `Cache Hit Ratio %`, `Total NanoAIU`, `Total AIU / AIC Credits`, `Duration / TTFT`, and a clickable CSV link) at the end of every prompt inside GitHub Copilot Chat?
 
-![Step 3: Live Copilot Chat Output](../docs/assets/screenshots/step-3-chat-tokenomics-output.png)
-
----
-
-### Step 4: Flip the Switch `ON` or `OFF` Anytime
-
-Need clean, minimal responses during a live presentation? Flip `TOKENOMICS_SWITCH: OFF` in `global.instructions.md`—or toggle it from your terminal in one second:
+Enabling in-chat preview consumes **a small fraction of tokens** per prompt (1 extra prompt-cached agent tool call + ~200 output tokens to render the table, with **0 extra user prompt multiplier**). You decide when to turn it `ON` or `OFF`:
 
 ```bash
-python "$HOME/.copilot/instructions/update-tokenomics.py" --off
+# Enable live ## Tokenomics preview table in GHCP Chat
 python "$HOME/.copilot/instructions/update-tokenomics.py" --on
+
+# Disable in-chat preview anytime (back to default 0-token CLI mode)
+python "$HOME/.copilot/instructions/update-tokenomics.py" --off
+
+# Check current switch status (OFF by default)
 python "$HOME/.copilot/instructions/update-tokenomics.py" --status
 ```
 
-![Step 4: 29-Column CSV & CLI Toggle](../docs/assets/screenshots/step-4-daily-csv-analytics.png)
+![Step 3: Live Copilot Chat Output](../docs/assets/screenshots/step-3-chat-tokenomics-output.png)
 
 ---
 

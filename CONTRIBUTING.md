@@ -31,15 +31,15 @@ python -m unittest discover -s tests -v
 ### 3. Test the CLI Locally
 
 ```bash
-# Check switch status
+# Check switch status (defaults to OFF for zero chat token overhead)
 python update-tokenomics.py --status
 
-# Toggle switch OFF and verify skip behavior
-python update-tokenomics.py --off
+# Sync daily CSV from terminal with zero token consumption
 python update-tokenomics.py
 
-# Toggle switch back ON
+# Enable or disable live in-chat ## Tokenomics preview in global.instructions.md
 python update-tokenomics.py --on
+python update-tokenomics.py --off
 ```
 
 ### 4. Submit a Pull Request
